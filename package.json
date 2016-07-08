@@ -1,0 +1,22 @@
+{
+  "name": "backman",
+  "version": "0.0.1",
+  "description": "A man who provides rest api on node for you",
+  "main": "backman.core.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DyckGerman/backman.git"
+  },
+  "author": "DyckGerman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DyckGerman/backman/issues"
+  },
+  "homepage": "https://github.com/DyckGerman/backman#readme",
+  "dependencies": {
+    "logman": "git+https://github.com/DyckGerman/logman.git"
+  }
+}
