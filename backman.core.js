@@ -1,13 +1,27 @@
 'use strict';
 
+var https = require ('https');
+var http = require ('http');
+var Logman = require ('logman');
+
+var logman = new Logman({methodName: 'Backman', date: false});
 var Backman = function () {};
 
 Backman.prototype = {
   
   start: function() {
-  	console.log(this.testString);
+    logman.logThis('Server started');
+    var server = http.createServer((request, response) => {
+      var path = Backman.router.stripPath(request.url);
+      var pathMatches = Backman.router.findMatchingRoutes(path, this.router.routes);
+      response.end()
+    });
+
+    server.listen(8000);
   },
   
+
+
   router: {
   	routes: [],
 
@@ -33,9 +47,20 @@ Backman.prototype = {
 
 // static stuff
 Backman.router = {
-  matchRoute: function (path) {
-    // match paths against this.routes array
-    return false;
+  matchRoute: function (candidate, original) {
+    if (!candidate || !original || !original.path) return false;
+    var matches = original.path.exec(candidate);
+    return !!matches;
+  },
+
+  findMatchingRoutes: function (path, routes) {
+    var matches = [];
+    for (var i = 0; i < routes.length; i++) {
+      if (Backman.router.matchRoute(path, routes[i])) {
+        matches.push(routes[i]);
+      }
+    }
+    return matches;
   },
 
   stripPath: function (path) {
@@ -49,7 +74,7 @@ Backman.router = {
       keys.push(key);
       return '(.*)';
     });
-    return new RegExp('^' + Backman.router.escapeRegExp(regExpString) + '$', 'i');
+    return new RegExp('^' + Backman.router.escapeRegExp(regExpString, '/') + '$', 'i');
   },
 
   escapeRegExp : function(string, chars) {
@@ -70,6 +95,7 @@ backman.router.addRoute('get', '/user/:id/:token/profile/whatever', function () 
 
 console.log(backman.router.routes);
 
+backman.start();
 
 // target usage
 //
