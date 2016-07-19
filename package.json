@@ -18,5 +18,8 @@
   "homepage": "https://github.com/DyckGerman/backman#readme",
   "dependencies": {
     "logman": "git+https://github.com/DyckGerman/logman.git"
+  },
+  "devDependencies": {
+    "should": "^10.0.0"
   }
 }

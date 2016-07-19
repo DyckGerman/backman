@@ -81,7 +81,6 @@ Backman.router = {
   pathToRegExp: function (path, keys) {
     var keysRegExp = /:(\w+)/g;
     var regExpString = path.replace(keysRegExp, function (string, key) {
-      console.log(key);
       keys.push(key);
       return '(.*)';
     });
@@ -108,27 +107,6 @@ Backman.pipeline = function (request, response, pathsArray) {
 
 
 module.exports = Backman;
-
-var backman = new Backman();
-
-console.log(backman.router);
-console.log(Backman.router.matchRoute());
-
-backman.router.addRoute('get', /user\.*/ , function (request,response,next) {
-  console.log('Lets assume we authenticate somebody here');
-  next();
-});
-
-backman.router.addRoute('get', '/user/:id/:token/profile/whatever', function (request,response,next) {
-  console.log('first path processed, calling next');
-  response.setHeader("ContentType", "application/json");
-  response.end('{"title":"Hola"}');
-});
-
-
-console.log(backman.router.routes);
-
-backman.start();
 
 // target usage
 //
