@@ -10,26 +10,37 @@ var Backman = function () {};
 Backman.prototype = {
   
   start: function() {
-    logman.logThis('Server started');
+    logman.logThis('Starting Backman');
     var server = http.createServer((request, response) => {
-      var path = Backman.router.stripPath(request.url);
-      var pathMatches = Backman.router.findMatchingRoutes(path, this.router.routes);
-      Backman.pipeline(request,response,pathMatches);
+      var body = '';
+      request.on('data', (data) => {
+        body += data;
+      });
+      request.on('end', () => {
+        var path = Backman.router.stripPath(request.url);
+        var pathMatches = Backman.router.findMatchingRoutes(path, this.router.routes);
+        Backman.pipeline(request,response,pathMatches);
+      });
+      logman.logThis({offset: 4, logLine:'Have request'});
     });
 
     server.listen(8000);
+    logman.logThis('Backman started');
   },
-  
-
   
 
   router: {
   	routes: [],
 
   	addRoute: function (method, path, handler) {
-      path = Backman.router.stripPath(path);
       var keys = [];
-      path = Backman.router.pathToRegExp(path, keys);
+
+      if (path.constructor === String) {
+        path = Backman.router.stripPath(path);
+        path = Backman.router.pathToRegExp(path, keys);
+      } else if (path.constructor !== RegExp) {
+        return 0;
+      }
 
       var newRoute = {
         keys : keys,
@@ -44,7 +55,6 @@ Backman.prototype = {
   },
 }
 
-          
 
 // static stuff
 Backman.router = {
@@ -94,24 +104,27 @@ Backman.pipeline = function (request, response, pathsArray) {
   }
 }
 
-module.exports = Backman;
 
+
+
+module.exports = Backman;
 
 var backman = new Backman();
 
 console.log(backman.router);
 console.log(Backman.router.matchRoute());
 
-backman.router.addRoute('get', '/user/:id/:token/profile/whatever', function (request,response,next) {
-  console.log('first path processed, calling next');
+backman.router.addRoute('get', /user\.*/ , function (request,response,next) {
+  console.log('Lets assume we authenticate somebody here');
   next();
 });
 
 backman.router.addRoute('get', '/user/:id/:token/profile/whatever', function (request,response,next) {
-  console.log('second path processed, finishing response');
+  console.log('first path processed, calling next');
   response.setHeader("ContentType", "application/json");
   response.end('{"title":"Hola"}');
 });
+
 
 console.log(backman.router.routes);
 
