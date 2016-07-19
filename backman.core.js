@@ -14,13 +14,14 @@ Backman.prototype = {
     var server = http.createServer((request, response) => {
       var path = Backman.router.stripPath(request.url);
       var pathMatches = Backman.router.findMatchingRoutes(path, this.router.routes);
-      response.end()
+      Backman.pipeline(request,response,pathMatches);
     });
 
     server.listen(8000);
   },
   
 
+  
 
   router: {
   	routes: [],
@@ -81,7 +82,19 @@ Backman.router = {
     var specials = (chars || '/ . * + ? | ( ) [ ] { } \\').split(' ').join('|\\')
     return string.replace(new RegExp('(\\' + specials + ')', 'g'), '\\$1')
   }
+};
+
+Backman.pipeline = function (request, response, pathsArray) {
+  var next = function() {
+    pathsArray.shift();
+    Backman.pipeline(request, response, pathsArray);
+  }
+  if (pathsArray.length > 0) {
+    pathsArray[0].handler(request,response,next);
+  }
 }
+
+module.exports = Backman;
 
 
 var backman = new Backman();
@@ -89,8 +102,15 @@ var backman = new Backman();
 console.log(backman.router);
 console.log(Backman.router.matchRoute());
 
-backman.router.addRoute('get', '/user/:id/:token/profile/whatever', function () {
-  console.log('idle');
+backman.router.addRoute('get', '/user/:id/:token/profile/whatever', function (request,response,next) {
+  console.log('first path processed, calling next');
+  next();
+});
+
+backman.router.addRoute('get', '/user/:id/:token/profile/whatever', function (request,response,next) {
+  console.log('second path processed, finishing response');
+  response.setHeader("ContentType", "application/json");
+  response.end('{"title":"Hola"}');
 });
 
 console.log(backman.router.routes);
