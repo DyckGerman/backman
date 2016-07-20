@@ -98,8 +98,14 @@ Backman.pipeline = function (request, response, pathsArray) {
     pathsArray.shift();
     Backman.pipeline(request, response, pathsArray);
   }
+
   if (pathsArray.length > 0) {
     pathsArray[0].handler(request,response,next);
+  }
+
+  if (!response.finished) {
+    response.statusCode = 500;
+    // response.end();
   }
 }
 
